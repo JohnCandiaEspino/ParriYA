@@ -199,7 +199,7 @@ fun DetalleCarneScreen(
     urlVideo: String    // Puedes ajustar este valor por carne
 ) {
     val (colorDificultad, tituloParrillero) = when (dificultad.uppercase()) {
-        "FÁCIL" -> Pair(Color.Green, "Ayudante de cocina")
+        "FÁCIL" -> Pair(Color.Green, "Ayudante Parrillero")
         "INTERMEDIO" -> Pair(Color.Yellow, "Parrillero")
         "DIFÍCIL" -> Pair(Color.Red, "Chef parrillero")
         else -> Pair(Color.Gray, "Sin definir")
