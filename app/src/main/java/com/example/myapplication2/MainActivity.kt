@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -64,6 +65,62 @@ class MainActivity : ComponentActivity() {
                         DetalleCarneScreen(nombre, descripcion, precio, imagenId, dificultad, urlVideo, navController)
                     }
                     composable("carrito") { CarritoScreen() }
+                    composable("foro") { ForoScreen() }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ForoScreen() {
+    var texto by remember { mutableStateOf("") }
+    val reseñas = remember { mutableStateListOf(
+        "🔥 Pedro: ¡Este asado fue el alma de la fiesta!",
+        "🔥 Laura: Aprendí a controlar el fuego gracias a ParriYA.",
+        "🔥 Martín: Excelente corte de Picanha, jugoso y en su punto.",
+        "🔥 Sofía: El tutorial me ayudó mucho como principiante."
+    ) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .padding(16.dp)
+    ) {
+        Text("Foro Parrillero", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = texto,
+            onValueChange = { texto = it },
+            label = { Text("Escribe tu recomendación") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = false,
+            maxLines = 3
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = {
+            if (texto.isNotBlank()) {
+                reseñas.add("🔥 Tú: $texto")
+                texto = ""
+            }
+        }, modifier = Modifier.align(Alignment.End)) {
+            Text("Publicar")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(reseñas) { reseña ->
+                Card(colors = CardDefaults.cardColors(containerColor = Color.DarkGray)) {
+                    Text(
+                        text = reseña,
+                        color = Color.White,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }
@@ -72,7 +129,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CarritoScreen() {
-    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,10 +160,7 @@ fun CarritoScreen() {
                 Text("Vaciar Carrito")
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {
-                Toast.makeText(context, "Gracias por tu compra!", Toast.LENGTH_SHORT).show()
-                carrito.clear()
-            }, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { Log.d("Carrito", "Pagar ahora") }, modifier = Modifier.fillMaxWidth()) {
                 Text("Pagar")
             }
         }
@@ -145,12 +198,26 @@ fun DetalleCarneScreen(nombre: String, descripcion: String, precio: String, imag
             }, modifier = Modifier.weight(1f)) {
                 Text("Agregar al Carrito")
             }
-            Button(onClick = { abrirVideoYouTube(context, urlVideo) }, modifier = Modifier.weight(1f)) {
-                Text("Ver Tutorial")
+            Button(onClick = { navController.navigate("foro") }, modifier = Modifier.weight(1f)) {
+                Text("Foro Parrilleros", textAlign = TextAlign.Center)
             }
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Button(onClick = { abrirVideoYouTube(context, urlVideo) }, modifier = Modifier.weight(1f)) {
+                Text("TutoParrillas  ")
+            }
+            Button(onClick = { navController.navigate("home") }, modifier = Modifier.weight(1f)) {
+                Text("RecetasYA ")
+            }
+
+
+
+        }
+
     }
 }
+
+
 
 @Composable
 fun LoginScreen(navController: NavController) {
