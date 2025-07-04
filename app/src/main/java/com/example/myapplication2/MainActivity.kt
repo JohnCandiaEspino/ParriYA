@@ -3,6 +3,7 @@ package com.example.myapplication2
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import android.widget.VideoView
 import android.content.Intent
 import androidx.activity.ComponentActivity
@@ -36,7 +37,10 @@ fun abrirVideoYouTube(context: android.content.Context, url: String) {
     context.startActivity(intent)
 }
 
-val carrito = mutableStateListOf<Carne>()
+data class Carne(val nombre: String, val descripcion: String, val precio: String, val imagenId: Int, val dificultad: String, val urlVideo: String)
+data class ItemCarrito(val carne: Carne, var cantidad: Int)
+
+val carrito = mutableStateListOf<ItemCarrito>()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,9 +71,120 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+fun CarritoScreen() {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .padding(16.dp)
+    ) {
+        Text("Carrito de Compras", fontSize = 24.sp, color = Color.White, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (carrito.isEmpty()) {
+            Text("Tu carrito está vacío", color = Color.LightGray)
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                items(carrito) { item ->
+                    Card(colors = CardDefaults.cardColors(containerColor = Color.DarkGray)) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Image(painter = painterResource(id = item.carne.imagenId), contentDescription = item.carne.nombre, modifier = Modifier.size(80.dp).padding(end = 12.dp))
+                            Column {
+                                Text(item.carne.nombre, color = Color.White)
+                                Text(item.carne.precio, color = Color(0xFFFFC107))
+                                Text("Cantidad: ${item.cantidad}", color = Color.LightGray)
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { carrito.clear() }, modifier = Modifier.fillMaxWidth()) {
+                Text("Vaciar Carrito")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = {
+                Toast.makeText(context, "Gracias por tu compra!", Toast.LENGTH_SHORT).show()
+                carrito.clear()
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text("Pagar")
+            }
+        }
+    }
+}
+
+fun agregarAlCarrito(carne: Carne, context: android.content.Context) {
+    val existente = carrito.find { it.carne.nombre == carne.nombre }
+    if (existente != null) {
+        existente.cantidad += 1
+    } else {
+        carrito.add(ItemCarrito(carne, 1))
+    }
+    Toast.makeText(context, "Producto agregado al carrito", Toast.LENGTH_SHORT).show()
+}
+
+@Composable
+fun DetalleCarneScreen(nombre: String, descripcion: String, precio: String, imagenId: Int, dificultad: String, urlVideo: String, navController: NavController) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier.fillMaxSize().background(Color.Black).padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(nombre, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Spacer(modifier = Modifier.height(16.dp))
+        Image(painter = painterResource(id = imagenId), contentDescription = nombre, modifier = Modifier.size(200.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(descripcion, color = Color.LightGray, fontSize = 16.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(precio, color = Color(0xFFFFC107), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Button(onClick = {
+                agregarAlCarrito(Carne(nombre, descripcion, precio, imagenId, dificultad, urlVideo), context)
+            }, modifier = Modifier.weight(1f)) {
+                Text("Agregar al Carrito")
+            }
+            Button(onClick = { abrirVideoYouTube(context, urlVideo) }, modifier = Modifier.weight(1f)) {
+                Text("Ver Tutorial")
+            }
+        }
+    }
+}
+
+@Composable
+fun LoginScreen(navController: NavController) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Text("Iniciar Sesión", color = Color.White, fontSize = 28.sp)
+            Spacer(modifier = Modifier.height(20.dp))
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Usuario") }
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                visualTransformation = PasswordVisualTransformation()
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(onClick = { navController.navigate("home") }) {
+                Text("Ingresar")
+            }
+        }
+    }
+}
+
+@Composable
 fun VideoBackgroundLanding(navController: NavController) {
     val context = LocalContext.current
-
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         AndroidView(
             factory = {
@@ -85,15 +200,13 @@ fun VideoBackgroundLanding(navController: NavController) {
             },
             modifier = Modifier.fillMaxSize()
         )
-
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)))
-
         Box(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("\uD83D\uDD25 ParriYA", fontSize = 40.sp, color = Color.White)
+                Text("🔥 ParriYA", fontSize = 40.sp, color = Color.White)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Domina el fuego. Vive la parrilla.", fontSize = 18.sp, color = Color.White)
                 Spacer(modifier = Modifier.height(32.dp))
@@ -104,107 +217,6 @@ fun VideoBackgroundLanding(navController: NavController) {
         }
     }
 }
-
-@Composable
-fun LoginScreen(navController: NavController) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Iniciar Sesión", color = Color.White, fontSize = 28.sp)
-            Spacer(modifier = Modifier.height(20.dp))
-
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Usuario") }
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Contraseña") },
-                visualTransformation = PasswordVisualTransformation()
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(onClick = { navController.navigate("home") }) {
-                Text("Ingresar")
-            }
-        }
-    }
-}
-
-@Composable
-fun CarritoScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(16.dp)
-    ) {
-        Text("Carrito de Compras", fontSize = 24.sp, color = Color.White, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (carrito.isEmpty()) {
-            Text("Tu carrito está vacío", color = Color.LightGray)
-        } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(carrito) { carne ->
-                    Card(colors = CardDefaults.cardColors(containerColor = Color.DarkGray)) {
-                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Image(painter = painterResource(id = carne.imagenId), contentDescription = carne.nombre, modifier = Modifier.size(80.dp).padding(end = 12.dp))
-                            Column {
-                                Text(carne.nombre, color = Color.White)
-                                Text(carne.precio, color = Color(0xFFFFC107))
-                            }
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { carrito.clear() }, modifier = Modifier.fillMaxWidth()) {
-                Text("Vaciar Carrito")
-            }
-        }
-    }
-}
-
-@Composable
-fun DetalleCarneScreen(nombre: String, descripcion: String, precio: String, imagenId: Int, dificultad: String, urlVideo: String, navController: NavController) {
-    val context = LocalContext.current
-
-    Column(
-        modifier = Modifier.fillMaxSize().background(Color.Black).padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(nombre, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Color.White)
-        Spacer(modifier = Modifier.height(16.dp))
-        Image(painter = painterResource(id = imagenId), contentDescription = nombre, modifier = Modifier.size(200.dp))
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(descripcion, color = Color.LightGray, fontSize = 16.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(precio, color = Color(0xFFFFC107), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-        Spacer(modifier = Modifier.height(24.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = {
-                carrito.add(Carne(nombre, descripcion, precio, imagenId, dificultad, urlVideo))
-                navController.navigate("carrito")
-            }, modifier = Modifier.weight(1f)) {
-                Text("Agregar al Carrito")
-            }
-            Button(onClick = { abrirVideoYouTube(context, urlVideo) }, modifier = Modifier.weight(1f)) {
-                Text("Ver Tutorial")
-            }
-        }
-    }
-}
-
-data class Carne(val nombre: String, val descripcion: String, val precio: String, val imagenId: Int, val dificultad: String, val urlVideo: String)
 
 val listaCarnes = listOf(
     Carne("Bife de Chorizo", "Corte grueso jugoso y sabroso.", "S/ 35.00", R.drawable.bife, "FÁCIL", "https://www.youtube.com/shorts/HKYy94J8_VA"),
@@ -222,10 +234,10 @@ fun HomeScreen(navController: NavController) {
     Column(
         modifier = Modifier.fillMaxSize().background(Color.Black).padding(16.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text("Carnes disponibles", fontSize = 24.sp, color = Color.White, fontWeight = FontWeight.Bold)
             Button(onClick = { navController.navigate("carrito") }) {
-                Text("Carrito (${carrito.size})")
+                Text("Carrito (${carrito.sumOf { it.cantidad }})")
             }
         }
 
