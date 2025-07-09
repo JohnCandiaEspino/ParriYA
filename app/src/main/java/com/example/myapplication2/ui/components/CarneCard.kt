@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication2.Carne
 
+
 @Composable
 fun CarneCard(carne: Carne, navController: NavController) {
     Card(
@@ -47,7 +48,14 @@ fun CarneCard(carne: Carne, navController: NavController) {
                     val dificultadEncoded = Uri.encode(carne.dificultad)
                     val videoEncoded = Uri.encode(carne.urlVideo)
                     navController.navigate("detalle/$nombreEncoded/$descripcionEncoded/$precioEncoded/${carne.imagenId}/$dificultadEncoded/$videoEncoded")
-                }) {
+                },
+
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent, // fondo transparente
+                            contentColor = Color.White),          // texto blanco (ajústalo si usas otro fondo)
+                        elevation = ButtonDefaults.buttonElevation(0.dp),
+                        modifier = Modifier.padding(top = 8.dp)
+                ) {
                     Text("Ver más")
                 }
                 Text(carne.dificultad, color = Color(0xFFFFC107), fontSize = 12.sp)

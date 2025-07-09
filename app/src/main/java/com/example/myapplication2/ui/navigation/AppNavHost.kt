@@ -36,5 +36,19 @@ fun AppNavHost(navController: NavHostController) {
                 navController
             )
         }
+        composable("receta/{nombre}") { backStackEntry: NavBackStackEntry ->
+            val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
+            val ingredientes = listOf("1 KG de carne", "Sal Gruesa", "Pimienta", "Aceite de Oliva")
+            val pasos = listOf(
+                "Precalienta la parrilla.",
+                "Sazona la carne.",
+                "Colócala en la parrilla.",
+                "Cocina 5 minutos por lado.",
+                "Déjala reposar y sirve."
+            )
+
+            RecetaCompletaScreen(nombre, ingredientes=ingredientes, pasos=pasos, navController)
+        }
+
     }
 }

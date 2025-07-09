@@ -57,7 +57,8 @@ fun DetalleCarneScreen(nombre: String, descripcion: String, precio: String, imag
             Button(onClick = { abrirVideoYouTube(context, urlVideo) }, modifier = Modifier.weight(1f)) {
                 Text("TutoParrillas  ")
             }
-            Button(onClick = { navController.navigate("home") }, modifier = Modifier.weight(1f)) {
+            Button(onClick = { navController.navigate("receta/${nombre}") },
+                modifier = Modifier.weight(1f)) {
                 Text("RecetasYA ")
             }
 
